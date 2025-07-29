@@ -1,7 +1,7 @@
 from docling.document_converter import DocumentConverter
 
 # For a local file
-source_path = "./pdf/B.pdf"  # Replace with your local document path
+source_path = "./pdf/G.pdf"  # Replace with your local document path
 
 # Create a converter and convert the file
 converter = DocumentConverter()
@@ -14,7 +14,7 @@ document = result.document
 md_output = document.export_to_markdown()
 
 # Save the output to an HTML file
-output_path = "./Docling_B1.md"
+output_path = "./Docling_G.md"
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(md_output)
 
