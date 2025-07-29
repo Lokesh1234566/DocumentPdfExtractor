@@ -4,7 +4,7 @@ from docling_parse.pdf_parser import DoclingPdfParser, PdfDocument
 parser = DoclingPdfParser()
 
 pdf_doc: PdfDocument = parser.load(
-    path_or_stream="./pdf/A.pdf"
+    path_or_stream="./pdf/B.pdf"
 )
 
 # PdfDocument.iterate_pages() will automatically populate pages as they are yielded.
