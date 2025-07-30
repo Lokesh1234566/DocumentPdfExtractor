@@ -1,9 +1,14 @@
+import os
 import pdfplumber
 
-output_file_path = "clean_output.txt"  # Final cleaned output file
+input_file_path = "./pdf/A.pdf"
+input_file_name = os.path.splitext(os.path.basename(input_file_path))[0]  # "B"
+output_dir = "./boxplumber"
+os.makedirs(output_dir, exist_ok=True)  # Create the folder if it doesn't exist
+output_file_path = os.path.join(output_dir, f"{input_file_name}.txt")
 
 with open(output_file_path, "w", encoding="utf-8") as out_file:
-    with pdfplumber.open("./pdf/B.pdf") as pdf:
+    with pdfplumber.open(input_file_path) as pdf:
         for page in pdf.pages:
             for table in page.extract_tables():
                 for row in table:
