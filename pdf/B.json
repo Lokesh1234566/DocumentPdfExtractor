@@ -1,0 +1,27 @@
+{
+  "file_name": "B.pdf",
+  "extraction_date": "2025-07-30T12:53:22.843103",
+  "invoice_number": null,
+  "date": null,
+  "vendor_name": null,
+  "customer_name": null,
+  "currency": "INR",
+  "subtotal": null,
+  "tax_amount": 39269099.0,
+  "total_amount": null,
+  "line_items": [
+    {
+      "description": "Total",
+      "quantity": "20",
+      "unit_price": 3840.0,
+      "total_price": 691.2
+    },
+    {
+      "description": "Value Rate Amount Tax Amount",
+      "quantity": "39269099",
+      "unit_price": 3840.0,
+      "total_price": 18.0
+    }
+  ],
+  "raw_text": "Tax Invoice\n3DE TECHNOLOGY PROTOTYPE SOLUTIONS Pvt Ltd Invoice No. Dated\nNo.5,SF No.16/2A1 SIDCO Industrial Estate, 3D/IV/20-21/0090 24-Jul-2020\nNear Ashok Leyland Unit-I\nDelivery Note Mode/Terms of Payment\nZuzuvadi Sipcot-1\nHosur-635126.\nGSTIN/UIN: 33AABCZ2737P1ZW Supplier’s Ref. Other Reference(s)\nState Name : Tamil Nadu, Code : 33\n3DTPS/VC000264/2020\nE-Mail : accounts@3dtechproto.com\nBuyer’s Order No. Dated\nBuyer PO-IA20-3007 13-Jul-2020\nIrillic Pvt Ltd Despatch Document No. Delivery Note Date\n#76,29th Main 10th Cross\n1st Phase ,J.P Nagar Despatched through Destination\nBangalore\nGSTIN/UIN :29AAECI4323B1ZY\nState Name :Karnataka, Code : 29 Terms of Delivery\nSl Description of Goods HSN/SAC GST Quantity Rate per Amount\nNo. Rate\n1 Supply of Prototype Parts 39269099 18 % 12 Nos. 320.00 Nos. 3,840.00\nOutlet Pipe\nOutput IGST 691.20\nLess : Round Off (-)0.20\nTotal 12 Nos. (cid:299) 4,531.00\nAmount Chargeable (in words) E. & O.E\nINR Four Thousand Five Hundred Thirty One Only\nHSN/SAC Taxable Integrated Tax Total\nValue Rate Amount Tax Amount\n39269099 3,840.00 18% 691.20 691.20\nTotal 3,840.00 691.20 691.20\nTax Amount (in words) : INR Six Hundred Ninety One and Twenty paise Only\nCompany’s Bank Details\nBank Name :Indian Bank\nA/c No. :6695606641\nBranch & IFS Code :Zuzuvadi, Hosur & IDIB000Z001\nDeclaration for 3DE TECHNOLOGY PROTOTYPE SOLUTIONS Pvt Ltd\nWe declare that this invoice shows the actual price of the\ngoods described and that all particulars are true and correct.\nAuthorised Signatory\nSUBJECT TO HOSUR JURISDICTION\nThis is a Computer Generated Invoice\n"
+}

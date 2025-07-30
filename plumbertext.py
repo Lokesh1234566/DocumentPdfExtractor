@@ -13,7 +13,7 @@ def extract_text_with_layout(pdf_path):
     return full_text
 
 # Input PDF
-input_file_path = "./pdf/vaco_2.pdf"
+input_file_path = "./pdf/IRILLIC.PDF"
 input_file_name = os.path.splitext(os.path.basename(input_file_path))[0]
 
 # Output directory and file path
