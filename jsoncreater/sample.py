@@ -1,8 +1,9 @@
 import pdfplumber
-import json
+import json 
 
-pdf_path = "../pdf/BCopy.pdf"
-output_json_path = "../pdf/BCopy.json"
+
+pdf_path = "../pdf/G.pdf"
+output_json_path = "../pdf/G.json"
 
 extracted_tables = []
 

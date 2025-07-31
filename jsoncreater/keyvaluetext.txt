@@ -1,10 +1,9 @@
 import json
-import ThreeDConstants
 
 # ------------------------------
 # Load JSON File
 # ------------------------------
-with open('../pdf/A1.json', 'r', encoding='utf-8') as f:
+with open('../pdf/sb_tech_1.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 result = {}
@@ -29,7 +28,7 @@ buyer_lines = []
 is_buyer = False
 
 for line in lines:
-    if line.strip() == ThreeDConstants.Constant_3DEBuyer:
+    if line.strip() == "Buyer":
         is_buyer = True
         continue
     if is_buyer:
@@ -42,16 +41,16 @@ for line in company_lines:
     if key and value:
         result[key] = value
     elif line:
-        result.setdefault(ThreeDConstants.Constant_Company_Info, []).append(line)
+        result.setdefault("Company Info", []).append(line)
 
 for line in buyer_lines:
     key, value = extract_key_value_from_line(line)
     if key and value:
         result[f"Buyer {key}"] = value
     elif line:
-        result.setdefault(ThreeDConstants.Constant_Buyer_Info, []).append(line)
+        result.setdefault("Buyer Info", []).append(line)
 
-for k in [ThreeDConstants.Constant_Company_Info, ThreeDConstants.Constant_Buyer_Info]:
+for k in ["Company Info", "Buyer Info"]:
     if k in result:
         result[k] = "\n".join(result[k])
 
@@ -79,7 +78,7 @@ start_idx = None
 
 # Find header row
 for idx, row in enumerate(table_rows):
-    if row and any(ThreeDConstants.Constant_Description in str(cell) for cell in row):
+    if row and any("Description of Goods" in str(cell) for cell in row):
         header_row = row
         start_idx = idx + 1
         break
@@ -99,25 +98,25 @@ if header_row and start_idx is not None:
                     continue
 
                 val1 = col_values[i + j] if i + j < len(col_values) else ""
-                val2 = col_values[i + j + 1] if (key == ThreeDConstants.Constant_Description and i + j + 1 < len(col_values)) else ""
+                val2 = col_values[i + j + 1] if (key == "Description of Goods" and i + j + 1 < len(col_values)) else ""
 
-                if key == ThreeDConstants.Constant_Description:
+                if key == "Description of Goods":
                     item[key] = f"{val1.strip()} {val2.strip()}".strip()
-                elif key == ThreeDConstants.Constant_SL_No:
-                    item[ThreeDConstants.Constant_Sl] = val1.strip()
+                elif key == "Sl No.":
+                    item["Sl"] = val1.strip()
                 else:
                     item[key] = val1.strip()
-            if item.get(ThreeDConstants.Constant_Sl) and item.get(ThreeDConstants.Constant_Description):
+            if item.get("Sl") and item.get("Description of Goods"):
                 item_rows.append(item)
 
 # Add to result
 if item_rows:
-    result[ThreeDConstants.Constant_Items] = item_rows
+    result["Items"] = item_rows
 
 # ------------------------------
 # Clean and Output Result
 # ------------------------------
-result = json.loads(json.dumps(result).replace(ThreeDConstants.Constant_cid299, '').replace(ThreeDConstants.Constant_u2122, "'"))
+result = json.loads(json.dumps(result).replace('(cid:299)', '').replace('\u2122', "'"))
 
 # Print JSON
 print(json.dumps(result, indent=4))

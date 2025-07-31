@@ -1,0 +1,9 @@
+Constant_3DEBuyer = 'Buyer'
+Constant_Company_Info = 'Company Info'
+Constant_Buyer_Info = 'Buyer Info'
+Constant_Description = 'Description of Goods'
+Constant_Items= "Items"
+Constant_cid299 = '(cid:299)'
+Constant_u2122  ='\u2122'
+Constant_SL_No = "Sl No."
+Constant_Sl = "Sl"
