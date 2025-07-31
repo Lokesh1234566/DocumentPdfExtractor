@@ -1,16 +1,17 @@
 import json
-import re
 
-# Load JSON
-with open('../pdf/A1.json', 'r', encoding='utf-8') as f:
+# ------------------------------
+# Load JSON File
+# ------------------------------
+with open('../pdf/B1.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 result = {}
 
-# Get the first cell of the first table
+# ------------------------------
+# Extract Company and Buyer Info
+# ------------------------------
 header_block = data[0]['tables'][0][0][0]
-
-# Split into lines
 lines = header_block.split('\n')
 
 def extract_key_value_from_line(line):
@@ -22,10 +23,10 @@ def extract_key_value_from_line(line):
         return key.strip(), value.strip()
     return None, None
 
-# Parse header block
 company_lines = []
 buyer_lines = []
 is_buyer = False
+
 for line in lines:
     if line.strip() == "Buyer":
         is_buyer = True
@@ -35,7 +36,6 @@ for line in lines:
     else:
         company_lines.append(line.strip())
 
-# Parse company info
 for line in company_lines:
     key, value = extract_key_value_from_line(line)
     if key and value:
@@ -43,7 +43,6 @@ for line in company_lines:
     elif line:
         result.setdefault("Company Info", []).append(line)
 
-# Parse buyer info
 for line in buyer_lines:
     key, value = extract_key_value_from_line(line)
     if key and value:
@@ -51,7 +50,13 @@ for line in buyer_lines:
     elif line:
         result.setdefault("Buyer Info", []).append(line)
 
-# Extract key-value from 5th column (index 4)
+for k in ["Company Info", "Buyer Info"]:
+    if k in result:
+        result[k] = "\n".join(result[k])
+
+# ------------------------------
+# Extract Key-Value Pairs in Column 5
+# ------------------------------
 table_rows = data[0]['tables'][0]
 for row in table_rows:
     if len(row) > 4 and row[4]:
@@ -64,67 +69,58 @@ for row in table_rows:
         else:
             result[cell.strip()] = ""
 
-# Convert list-type values to string
-for k in ["Company Info", "Buyer Info"]:
-    if k in result:
-        result[k] = "\n".join(result[k])
-
-# ====================================
-# Extract only actual item rows
-# ====================================
-
+# ------------------------------
+# Extract and Merge Item Rows
+# ------------------------------
 item_rows = []
 header_row = None
+start_idx = None
 
-# Find the item table header row
+# Find header row
 for idx, row in enumerate(table_rows):
-    if row and "Description of Goods" in row:
+    if row and any("Description of Goods" in str(cell) for cell in row):
         header_row = row
         start_idx = idx + 1
         break
 
-# Prepare header mapping
-if header_row:
-    headers = [h.replace('\n', ' ').strip() if h else "" for h in header_row]
+if header_row and start_idx is not None:
+    headers = [cell.replace("\n", " ").strip() if cell else "" for cell in header_row]
+    data_row = table_rows[start_idx]
+    split_columns = [cell.split("\n") if cell else [] for cell in data_row]
+    max_len = max(len(col) for col in split_columns)
 
-    for row in table_rows[start_idx:]:
-        if not any(row):  # skip completely empty rows
-            continue
+    for i in range(0, max_len - 1, 2):  # Step every 2 lines
+        for j in range(2):  # Handle 2 entries per pair
+            item = {}
+            for col_idx, col_values in enumerate(split_columns):
+                key = headers[col_idx]
+                if not key:
+                    continue
 
-        # Skip rows that are NOT actual product line items
-        if row[0] not in ["1", "2", "3"]:  # line items usually start with numeric index
-            continue
+                val1 = col_values[i + j] if i + j < len(col_values) else ""
+                val2 = col_values[i + j + 1] if (key == "Description of Goods" and i + j + 1 < len(col_values)) else ""
 
-        item = {}
-        for i in range(len(headers)):
-            if headers[i]:
-                val = row[i] if i < len(row) and row[i] else ""
-                key = headers[i]
-
-                # Clean up Amount field
-                if key == "Amount" and '\n' in val:
-                    parts = val.split('\n')
-                    item["Amount"] = parts[0].strip()
-                    if len(parts) > 1:
-                        item["Tax"] = parts[1].strip()
-                    if len(parts) > 2:
-                        item["Round Off"] = parts[2].strip()
+                if key == "Description of Goods":
+                    item[key] = f"{val1.strip()} {val2.strip()}".strip()
+                elif key == "Sl No.":
+                    item["Sl"] = val1.strip()
                 else:
-                    item[key] = val.strip()
+                    item[key] = val1.strip()
+            if item.get("Sl") and item.get("Description of Goods"):
+                item_rows.append(item)
 
-        # Fix key for "Sl No."
-        if "Sl No." in item:
-            item["Sl"] = item.pop("Sl No.")
-
-        item_rows.append(item)
-        break  # STOP after first real item only
-
-# Add items if found
+# Add to result
 if item_rows:
     result["Items"] = item_rows
 
-# Clean known encodings
+# ------------------------------
+# Clean and Output Result
+# ------------------------------
 result = json.loads(json.dumps(result).replace('(cid:299)', '').replace('\u2122', "'"))
 
-# Print result
+# Print JSON
 print(json.dumps(result, indent=4))
+
+# Optional: Save to file
+# with open("output.json", "w", encoding="utf-8") as out_file:
+#     json.dump(result, out_file, indent=4, ensure_ascii=False)
