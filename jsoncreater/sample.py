@@ -2,8 +2,8 @@ import pdfplumber
 import json 
 
 
-pdf_path = "../pdf/G.pdf"
-output_json_path = "../pdf/G.json"
+pdf_path = "../pdf/vaco_1edit.pdf"
+output_json_path = "../pdf/Vaco_1edit.json"
 
 extracted_tables = []
 

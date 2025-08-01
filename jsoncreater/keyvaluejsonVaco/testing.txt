@@ -1,0 +1,185 @@
+import json
+import os
+
+# ------------------------------
+# Load JSON File
+# ------------------------------
+input_path = '../pdf/Vaco2.json'  # Update if needed
+with open(input_path, 'r', encoding='utf-8') as f:
+    data = json.load(f)
+
+result = {}
+
+# ------------------------------
+# Extract Company Info
+# ------------------------------
+header_block = data[0]['tables'][0][0][0]
+lines = header_block.split('\n')
+
+company_lines = []
+is_buyer = False
+
+for line in lines:
+    if line.strip().startswith("Buyer"):
+        is_buyer = True
+        continue
+    if is_buyer:
+        break
+    company_lines.append(line.strip())
+
+for line in company_lines:
+    key, value = None, None
+    if ':' in line:
+        key, value = line.split(':', 1)
+    elif ' : ' in line:
+        key, value = line.split(' : ', 1)
+    if key and value:
+        result[key.strip()] = value.strip()
+    elif line:
+        result.setdefault("Company Info", []).append(line)
+
+result["Company Info"] = "\n".join(result["Company Info"])
+
+# ------------------------------
+# Extract Buyer Info
+# ------------------------------
+buyer_block = data[0]['tables'][0][3][0]
+buyer_lines = buyer_block.split('\n')
+buyer_lines = [line.strip() for line in buyer_lines if line.strip()]
+result["Buyer Info"] = "\n".join(buyer_lines)
+
+# ------------------------------
+# Extract Invoice Meta Info
+# ------------------------------
+table = data[0]['tables'][0]
+
+def safe_extract(row_idx, col_idx):
+    try:
+        cell = table[row_idx][col_idx]
+        return cell.strip() if cell else ""
+    except IndexError:
+        return ""
+
+invoice_raw = safe_extract(0, 4)
+if invoice_raw and "Invoice No" in invoice_raw:
+    parts = invoice_raw.split("\n")
+    result["Invoice No"] = parts[1].strip() if len(parts) >= 2 else ""
+else:
+    result["Invoice No"] = ""
+
+result["Dated"] = safe_extract(0, 7).split("\n")[-1].strip() if safe_extract(0, 7) else ""
+
+result["Delivery Note"] = safe_extract(1, 4).split("\n")[-1].strip() if safe_extract(1, 4) else ""
+result["Mode/Terms of Payment"] = safe_extract(1, 7).split("\n")[-1].strip() if safe_extract(1, 7) else ""
+result["Supplier’s Ref."] = safe_extract(2, 4).split("\n")[-1].strip() if safe_extract(2, 4) else ""
+result["Other Reference(s)"] = safe_extract(2, 7).split("\n")[-1].strip() if safe_extract(2, 7) else ""
+
+result["Buyer's Order No."] = safe_extract(3, 4).split("\n")[-1].strip() if safe_extract(3, 4) else ""
+result["Delivery Note Date"] = safe_extract(4, 7).split("\n")[-1].strip() if safe_extract(4, 7) else ""
+result["Despatch Document No."] = safe_extract(4, 4).split("\n")[-1].strip() if safe_extract(4, 4) else ""
+result["Despatched through"] = safe_extract(5, 4).split("\n")[-1].strip() if safe_extract(5, 4) else ""
+result["Destination"] = safe_extract(5, 7).split("\n")[-1].strip() if safe_extract(5, 7) else ""
+result["Terms of Delivery"] = safe_extract(6, 4).split("\n")[-1].strip() if safe_extract(6, 4) else ""
+
+# ------------------------------
+# Extract Items, Taxes, Totals
+# ------------------------------
+item_rows = []
+tax_rows = []
+total_amount = ""
+
+rows = table
+i = 8  # Start from items header
+
+while i < len(rows):
+    row = rows[i]
+    if row and row[0] and row[0].strip().isdigit():
+        sl_no = row[0].strip()
+        particulars_parts = []
+
+        if len(row) > 2 and row[2]:
+            particulars_parts.append(row[2].strip())
+
+        hsn = row[5].strip() if len(row) > 5 and row[5] else ""
+        rate = row[6].strip() if len(row) > 6 and row[6] else ""
+        amount = row[9].strip() if len(row) > 9 and row[9] else ""
+
+        # Look ahead for continuation lines
+        j = i + 1
+        while j < len(rows) and (not rows[j][0] or not rows[j][0].strip().isdigit()):
+            cont_row = rows[j]
+            if len(cont_row) > 2 and cont_row[2]:
+                particulars_parts.append(cont_row[2].strip())
+            j += 1
+
+        particulars = " ".join(particulars_parts)
+
+        if particulars.lower() in ["cgst", "sgst"]:
+            tax_rows.append({
+                "Type": particulars,
+                "Rate": rate,
+                "Amount": amount
+            })
+        else:
+            item_rows.append({
+                "Sl": sl_no,
+                "Particulars": particulars,
+                "HSN/SAC": hsn,
+                "Rate": rate,
+                "Amount": amount
+            })
+
+        i = j
+    elif row and any("Total" in str(cell) for cell in row):
+        total_amount = row[-1].strip()
+        i += 1
+    else:
+        i += 1
+
+if item_rows:
+    result["Items"] = item_rows
+
+if tax_rows:
+    result["Taxes"] = tax_rows
+
+result["Total Amount"] = total_amount if total_amount else ""
+
+# ------------------------------
+# Footer: Amount in Words & Bank
+# ------------------------------
+footer_row = table[-2][0] if table[-2] and table[-2][0] else ""
+lines = footer_row.split("\n")
+
+for line in lines:
+    if "Amount Chargeable" in line or "Indian Rupees" in line:
+        result["Amount Chargeable (in words)"] = line.replace("Amount Chargeable (in words) E. & O.E", "").strip()
+    elif "Bank Name" in line:
+        result["Bank Name"] = line.split(":", 1)[1].strip()
+    elif "A/c No." in line:
+        result["Bank A/c No."] = line.split(":", 1)[1].strip()
+    elif "IFS Code" in line:
+        result["Branch & IFS Code"] = line.split(":", 1)[1].strip()
+
+# ------------------------------
+# Authorised Signatory
+# ------------------------------
+sign_line = table[-1][3]
+if sign_line and isinstance(sign_line, str):
+    lines = sign_line.split("\n")
+    result["Authorised Signatory"] = lines[-1].strip()
+
+# ------------------------------
+# Clean and Save JSON
+# ------------------------------
+result = json.loads(json.dumps(result).replace('(cid:299)', '').replace('\u2122', "'"))
+
+# Print JSON
+print(json.dumps(result, indent=4, ensure_ascii=False))
+
+# Save to keyvaluejson folder
+output_folder = 'keyvaluejsonVaco'
+os.makedirs(output_folder, exist_ok=True)
+
+output_filename = os.path.splitext(os.path.basename(input_path))[0] + '.json'
+with open(os.path.join(output_folder, output_filename), 'w', encoding='utf-8') as f:
+    json.dump(result, f, indent=4, ensure_ascii=False)
