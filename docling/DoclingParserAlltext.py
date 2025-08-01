@@ -8,7 +8,7 @@ parser = DoclingPdfParser()
 #     path_or_stream="C:\Allfiles\A.pdf"
 # )
 converter = DocumentConverter()
-result = converter.convert("../pdf/vaco_1.pdf")
+result = converter.convert("../pdf/sb_tech_1.pdf")
 # print(result.document.export_to_markdown()) 
 print(result.document.export_to_text())
 # PdfDocument.iterate_pages() will automatically populate pages as they are yielded.

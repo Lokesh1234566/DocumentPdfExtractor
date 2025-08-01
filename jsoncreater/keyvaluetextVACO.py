@@ -4,7 +4,7 @@ import ThreeDConstants
 # ------------------------------
 # Load JSON File
 # ------------------------------
-input_path = '../pdf/Vaco_1edit.json'  # update path as needed
+input_path = '../pdf/sb_tech_1.json'  # update path as needed
 with open(input_path, 'r', encoding='utf-8') as f:
     data = json.load(f)
 
